@@ -114,13 +114,13 @@ def bye():
 def getCmd(splitCmd):
     if (splitCmd[opCodeIndex] == "put"):
         put(splitCmd[fileNameIndex])  # done
-    elif ('get' in splitCmd[opCodeIndex]):
-        get()
-    elif ('change' in splitCmd[opCodeIndex]):
+    elif (splitCmd[opCodeIndex] == "get"):
+        get(splitCmd[fileNameIndex])
+    elif (splitCmd[opCodeIndex] == "change"):
         change(splitCmd[fileNameIndex], splitCmd[newFileNameIndex])  # done
-    elif ('help' in splitCmd[opCodeIndex]):
+    elif (splitCmd[opCodeIndex] == "help"):
         help()  # done
-    elif ('bye' in splitCmd[opCodeIndex]):
+    elif (splitCmd[opCodeIndex] == "bye"):
         bye()  # done
     else:
         print(f"Wrong Operation. \"{splitCmd[opCodeIndex]}\" does not exist.")

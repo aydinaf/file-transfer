@@ -162,8 +162,8 @@ elif ((received[0:3]) == "010"):
         toSend = (f"10100000").encode()
         client_socket.send(toSend)
 
-else:
-    toSend = (f"00000000").encode()
+else:# if wrong opCode
+    toSend = (f"01100000").encode()
     client_socket.send(toSend)
     # TODO: Functionalize the code above
     #      DONE: Take file Bytes from client
