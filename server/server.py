@@ -157,13 +157,13 @@ while True:
             toSend = (f"00000000").encode()
             client_socket.send(toSend)
         except IOError as e:
-            print(f"{e.errno} ",end='')
+            print(f"{e.errno} ", end='')
             print(e)
             toSend = (f"10100000").encode()
             client_socket.send(toSend)
     elif(received[0:3] == ""):
         print(f"Null Message.")
-    else:# if wrong opCode
+    else:  # if wrong opCode
         print(f"Invalid opCode \"{received[0:3]}\"")
         toSend = (f"01100000").encode()
         client_socket.send(toSend)
