@@ -24,34 +24,38 @@ print(f"received: {received}")
 print(f"OpCode: {received[0:3]}")
 
 if (received[0:3]) == "000":
-    print("it's a put Operator")
+    print("Recieved a PUT request")
     FL = int(received[3:8], 2)
     print(f"FL: {FL}")
 
     FN = (((received[8:(FL*8)])))
-    print(FN)
-    a =[]
-    for i in range(math.ceil(len(FN)/8)):
+    a = []
+    for i in range(FL-1):
         a.append(int(FN[i*8:i*8+8]))
 
     def toString(a):
-        l=[]
-        m=""
+        l = []
+        m = ""
         for i in a:
-            b=0
-            c=0
-            k=int(math.log10(i))+1
+            b = 0
+            c = 0
+            k = int(math.log10(i))+1
             for j in range(k):
-                b=((i%10)*(2**j))   
-                i=i//10
-                c=c+b
+                b = ((i % 10)*(2**j))
+                i = i//10
+                c = c+b
             l.append(c)
         for x in l:
-            m=m+chr(x)
+            m = m+chr(x)
         return m
 
-    print(toString(a))
-
+    print(f"FN: {toString(a)}")
 
     FS = (received[(8+FL*8):(len(received))])
     print(f"FS: {(int(FS, 2))}")
+#TODO: Functionalize the code above
+#      Take file Bytes from client
+#      Write file
+#      Send OK Response
+#      Debug Flag
+#      
