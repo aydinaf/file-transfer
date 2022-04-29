@@ -11,4 +11,4 @@ Client User Commands:
     get fileName
     change oldFileName newFileName
     help
-    bye
+    \nbye
