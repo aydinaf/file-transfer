@@ -6,10 +6,13 @@
 ###############################
 
 from audioop import tostereo
+from cmath import log
+import re
 import socket
 import os
 import time
 import math
+from urllib import response
 
 opCodeIndex = 0
 fileNameIndex = 1
@@ -61,15 +64,25 @@ def put(fileName):
                 break
             clientSocket.sendall(buffer)
     print("Upload Complete.")
-
+    # clientSocket.listen(5)
+    # response = clientSocket.recv(BUFFER_SIZE)
+    # print(response)
 
 
 def get():
     print("Downloading from server...")
 
 
+
+
 def help():
     print("Asking for help")
+    opCode = "011"
+    unused = "00000"
+    toSend = (f"{opCode}{unused}".encode())
+    print(f"ToSend: {toSend}")
+    clientSocket.send(toSend)
+    print ((clientSocket.recv(BUFFER_SIZE)).decode("utf-8")[5:])
 
 
 def bye():
@@ -81,14 +94,18 @@ def bye():
 
 
 def getCmd(splitCmd):
-    if ("put" in splitCmd):
+    if (splitCmd[opCodeIndex] == "put"):
         put(splitCmd[fileNameIndex])
-    elif ('get' in splitCmd):
+    elif ('get' in splitCmd[opCodeIndex]):
         get()
-    elif ('help' in splitCmd):
+    elif ('change' in splitCmd[opCodeIndex]):
         help()
-    elif ('bye' in splitCmd):
+    elif ('help' in splitCmd[opCodeIndex]):
+        help()
+    elif ('bye' in splitCmd[opCodeIndex]):
         bye()
+    else:
+        print(f"Wrong Operation. \"{splitCmd[opCodeIndex]}\" does not exist.")
 
 ###############################
 
@@ -104,7 +121,7 @@ clientSocket.connect((serverIP, port))
 print("Connection Established")
 
 # Takes user command
-cmd = "put test3.pdf"  # input("Client:~\$ ")
+cmd = "help"  # input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 

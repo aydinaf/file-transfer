@@ -4,10 +4,12 @@
 # Project Assignment
 # Aydin Azari Farhad - 40063330
 ############## Imports ##################
+from audioop import tostereo
 import math
 import time
 import socket
 import os
+
 
 def reciever():
     print()
@@ -28,7 +30,7 @@ s.bind((SERVER_HOST, SERVER_PORT))
 s.listen(5)
 print(f">>> Listening as {SERVER_HOST}:{SERVER_PORT}")
 client_socket, address = s.accept()
-print(f"[+] {address} is connected.")
+print(f"[+] {address} is connected. Socket: {client_socket}")
 
 received = (client_socket.recv(BUFFER_SIZE)).decode("utf-8")
 print(f"received: {received}")
@@ -68,19 +70,29 @@ if (received[0:3]) == "000":
     FS = (received[(8+FL*8):(len(received))])
     print(f"FS: {(int(FS, 2))}")
 
-    # Write file from incoming stream 
+    # Write file from incoming stream
     with open(FNstr, "wb") as file:
         while True:
             buffer = (client_socket.recv(BUFFER_SIZE))
             if not buffer:
                 # Upload Completed
+                # client_socket.send("00000000".encode("utf-8"))
+                print(
+                    f"BREAK... BUFFER = {buffer}. Buffer Length: {len(buffer)}")
                 break
             file.write(buffer)
-        
+            # print(buffer)
+    print(f"File {FNstr} recieved and created.")
+    print(f"Expected size: {int(FS, 2)}\tRecieved size: {os.path.getsize(FNstr)}")
+elif ((received[0:3]) == "011"):
+    helpText = "Commands: bye change get put"
+    toSend = (f"011{len(helpText)}{helpText}").encode()
+    print(f"to send: {toSend}")
+    client_socket.send(toSend)
 
 # TODO: Functionalize the code above
-#      Take file Bytes from client
-#      Write file
+#      DONE: Take file Bytes from client
+#      DONE: Write file
 #      Send OK Response
 #      Debug Flag
 #      Other Operations
