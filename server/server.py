@@ -58,4 +58,4 @@ if (received[0:3]) == "000":
 #      Write file
 #      Send OK Response
 #      Debug Flag
-#      
+#      Other Operations
