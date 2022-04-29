@@ -131,18 +131,23 @@ def getCmd(splitCmd):
 # Takes IP and port number from user
 serverIP = "192.168.2.18"  # input("Please enter server IP address: ")
 port = 15000  # int(input("Please enter port number: "))
-clientSocket = socket.socket()
-
-# Establishes server connection
-print(f"Establishing Connection to {serverIP} : {port}")
-clientSocket.connect((serverIP, port))
-print("Connection Established")
 
 # Takes user command
-cmd = "bye"  # input("Client:~\$ ")
+cmd = "chan"  # input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 
-getCmd(splitCmd)
+while True:
+    clientSocket = socket.socket()
 
-clientSocket.close()
+    # Establishes server connection
+    print(f"Establishing Connection to {serverIP} : {port}")
+    clientSocket.connect((serverIP, port))
+    print("Connection Established")
+
+    getCmd(splitCmd)
+
+    clientSocket.close()
+    print("line150")
+    cmd = input("Client:~\$ ")
+    splitCmd = cmd.split()
