@@ -33,7 +33,8 @@ def fileNameToBin(fileName):
         name += (bin(ord(i))[2:].zfill(8))
     return name
 
-# takes file name as input, and returns the file size in Bytes [Note: NEEDS TO BE 4 BYTES]
+# takes file name as input, and returns the file size in Bytes
+# [Note: NEEDS TO BE 4 BYTES]
 
 
 def getFileSize(file):
@@ -50,15 +51,17 @@ def put(fileName):
     FS = getFileSize(fileName)
     toSend = bytes(f"{opCode}{FL}{FN}{FS}", encoding="utf-8")
     print(f"ToSend: {toSend}")
-    clientSocket.sendall(toSend)
+    clientSocket.send(toSend)
     with open(fileName, "rb") as file:
         while True:
             buffer = file.read(BUFFER_SIZE)
             print(f"Buffer: {buffer}")
             if not buffer:
+                print("Finished Uploading")
                 break
             clientSocket.sendall(buffer)
     print("Upload Complete.")
+
 
 
 def get():
@@ -101,8 +104,10 @@ clientSocket.connect((serverIP, port))
 print("Connection Established")
 
 # Takes user command
-cmd = "put test1.txt"  # input("Client:~\$ ")
+cmd = "put test3.pdf"  # input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 
 getCmd(splitCmd)
+
+clientSocket.close()
