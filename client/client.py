@@ -139,7 +139,7 @@ clientSocket.connect((serverIP, port))
 print("Connection Established")
 
 # Takes user command
-cmd = "change a.txt b.pdf"  # input("Client:~\$ ")
+cmd = "bye"  # input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 
