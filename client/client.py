@@ -5,7 +5,15 @@
 # Author: Aydin Azari Farhad - 40063330
 ###############################
 
-import socket, os, time, math
+from audioop import tostereo
+import socket
+import os
+import time
+import math
+
+opCodeIndex = 0
+fileNameIndex = 1
+newFileNameIndex = 3
 
 # Default Buffer Size
 BUFFER_SIZE = 4096
@@ -16,12 +24,10 @@ def fileNameLength(file):
 
 # takes file name as input and returns the file name as set of bytes
 def fileNameToBin(fileName):
-    list,m=[],[]
+    name = ''
     for i in fileName:
-        list.append(ord(i))
-    for i in list:
-        m.append(((bin(i)[2:].zfill(8))))
-    return m
+        name += (bin(ord(i))[2:].zfill(8))
+    return name
 
 # takes file name as input, and returns the file size in Bytes [Note: NEEDS TO BE 4 BYTES]
 def getFileSize(file):
@@ -32,35 +38,53 @@ def put(fileName):
     print("Uploading to server...")
     opCode = "000"
     FL = (fileNameLength(fileName))
-    FN = 
+    FN = fileNameToBin(fileName)
     FS = getFileSize(fileName)
-    toSend = bytes(f"{opCode}{FL}{FS}", encoding="utf-8")
+    toSend = bytes(f"{opCode}{FL}{FN}{FS}", encoding="utf-8")
+    print (f"ToSend: {toSend}")
     clientSocket.sendall(toSend)
     with open(fileName, "rb") as file:
         while True:
             buffer = file.read(BUFFER_SIZE)
+            print (f"Buffer: {buffer}")
             if not buffer:
                 break
             clientSocket.sendall(buffer)
-    
+    print("Upload Complete.")
+
 def get():
     print("Downloading from server...")
+
 def help():
     print("Asking for help")
+
 def bye():
     clientSocket.close()
     print("Session terminated.")
     quit()
+
+# Interprets the user command
+def getCmd(splitCmd):
+    if ("put" in splitCmd):
+        print ("found PUT in CMD")
+        put(splitCmd[fileNameIndex])
+    elif ('get' in splitCmd):
+        get()
+    elif ('help' in splitCmd):
+        help()
+    elif ('bye' in splitCmd):
+        bye()
+
 ###############################
 
 # Takes IP and port number from user
-serverIP = "192.168.217.130" #input("Please enter server IP address: ")
-port = 15000 #int(input("Please enter port number: "))
+serverIP = "192.168.2.18"  # input("Please enter server IP address: ")
+port = 15000  # int(input("Please enter port number: "))
 clientSocket = socket.socket()
 
 # Establishes server connection
 print(f"Establishing Connection to {serverIP} : {port}")
-clientSocket.connect((serverIP,port))
+clientSocket.connect((serverIP, port))
 print("Connection Established")
 
 # Takes user command
@@ -68,13 +92,4 @@ cmd = input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 
-# Interprets the user command
-def getCmd(splitCmd):
-    if ('put' in splitCmd):
-        put()
-    elif ('get' in splitCmd):
-        get()
-    elif ('help' in splitCmd):
-        help()
-    elif ('bye' in splitCmd):
-        bye()
+getCmd(splitCmd)
