@@ -16,7 +16,7 @@ from urllib import response
 
 opCodeIndex = 0
 fileNameIndex = 1
-newFileNameIndex = 3
+newFileNameIndex = 2
 
 # Default Buffer Size
 BUFFER_SIZE = 4096
@@ -52,7 +52,7 @@ def put(fileName):
     FL = (fileNameLength(fileName))
     FN = fileNameToBin(fileName)
     FS = getFileSize(fileName)
-    toSend = bytes(f"{opCode}{FL}{FN}{FS}", encoding="utf-8")
+    toSend = (f"{opCode}{FL}{FN}{FS}".encode())
     print(f"ToSend: {toSend}")
     clientSocket.send(toSend)
     with open(fileName, "rb") as file:
@@ -60,19 +60,36 @@ def put(fileName):
             buffer = file.read(BUFFER_SIZE)
             print(f"Buffer: {buffer}")
             if not buffer:
-                print("Finished Uploading")
                 break
             clientSocket.sendall(buffer)
     print("Upload Complete.")
-    # clientSocket.listen(5)
-    # response = clientSocket.recv(BUFFER_SIZE)
-    # print(response)
+    response = (clientSocket.recv(BUFFER_SIZE)).decode("utf-8")
+    if (response[0:3] == "000"):
+        print("Server provided OK response. Upload Successful.")
+    else:
+        print("Server did not provide OK response. Upload Failed.")
 
 
 def get():
     print("Downloading from server...")
 
 
+def change(oldfileName, newFileName):
+    print(f"Changing {oldfileName} to {newFileName}")
+    opCode = "010"
+    oFL = (fileNameLength(oldfileName))
+    oFN = fileNameToBin(oldfileName)
+    nFL = (fileNameLength(newFileName))
+    nFN = fileNameToBin(newFileName)
+    toSend = bytes(f"{opCode}{oFL}{oFN}{nFL}{nFN}", encoding="utf-8")
+    print(f"ToSend: {toSend}")
+    clientSocket.send(toSend)
+    response = (clientSocket.recv(BUFFER_SIZE)).decode("utf-8")
+    if (response[0:3] == "000"):
+        print("Server provided OK response. Upload Successful.")
+    else:
+        print(
+            f"Server did not provide OK response. Error {response[0:3]} Upload Failed.")
 
 
 def help():
@@ -82,12 +99,13 @@ def help():
     toSend = (f"{opCode}{unused}".encode())
     print(f"ToSend: {toSend}")
     clientSocket.send(toSend)
-    print ((clientSocket.recv(BUFFER_SIZE)).decode("utf-8")[5:])
+    print((clientSocket.recv(BUFFER_SIZE)).decode("utf-8")[5:])
 
 
 def bye():
     clientSocket.close()
     print("Session terminated.")
+    clientSocket.close()
     quit()
 
 # Interprets the user command
@@ -95,15 +113,15 @@ def bye():
 
 def getCmd(splitCmd):
     if (splitCmd[opCodeIndex] == "put"):
-        put(splitCmd[fileNameIndex])
+        put(splitCmd[fileNameIndex])  # done
     elif ('get' in splitCmd[opCodeIndex]):
         get()
     elif ('change' in splitCmd[opCodeIndex]):
-        help()
+        change(splitCmd[fileNameIndex], splitCmd[newFileNameIndex])  # done
     elif ('help' in splitCmd[opCodeIndex]):
-        help()
+        help()  # done
     elif ('bye' in splitCmd[opCodeIndex]):
-        bye()
+        bye()  # done
     else:
         print(f"Wrong Operation. \"{splitCmd[opCodeIndex]}\" does not exist.")
 
@@ -121,7 +139,7 @@ clientSocket.connect((serverIP, port))
 print("Connection Established")
 
 # Takes user command
-cmd = "help"  # input("Client:~\$ ")
+cmd = "change a.txt b.pdf"  # input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 
