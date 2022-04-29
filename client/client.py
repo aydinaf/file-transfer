@@ -66,7 +66,6 @@ def bye():
 # Interprets the user command
 def getCmd(splitCmd):
     if ("put" in splitCmd):
-        print ("found PUT in CMD")
         put(splitCmd[fileNameIndex])
     elif ('get' in splitCmd):
         get()
@@ -88,7 +87,7 @@ clientSocket.connect((serverIP, port))
 print("Connection Established")
 
 # Takes user command
-cmd = input("Client:~\$ ")
+cmd = "put test1.txt" #input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 
