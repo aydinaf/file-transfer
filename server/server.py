@@ -1,4 +1,4 @@
-# CLIENT SIDE SCRIPT
+# Server Side Script
 #<><><><><><><><><>#
 # COEN366 - Winter 2022
 # Project Assignment
@@ -87,7 +87,7 @@ while True:
     # help()
     elif ((received[0:3]) == "011"):
         helpText = "Commands: bye change get put"
-        toSend = (f"011{len(helpText)}{helpText}").encode()
+        toSend = (f"110{len(helpText)}{helpText}").encode()
         print(f"to send: {toSend}")
         client_socket.send(toSend)
     # change()
@@ -161,7 +161,7 @@ while True:
             print(e)
             toSend = (f"10100000").encode()
             client_socket.send(toSend)
-    elif(received[0:3] == ""):
+    elif(received[0:3] == ""):  # Null op code
         print(f"Null Message.")
     else:  # if wrong opCode
         print(f"Invalid opCode \"{received[0:3]}\"")

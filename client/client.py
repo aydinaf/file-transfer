@@ -71,7 +71,59 @@ def put(fileName):
 
 
 def get():
-    print("Downloading from server...")
+    print("Uploading to server...")
+    opCode = "001"
+    FL = (fileNameLength(fileName))
+    FN = fileNameToBin(fileName)
+    toSend = (f"{opCode}{FL}{FN}".encode())
+    print(f"ToSend: {toSend}")
+    clientSocket.send(toSend)
+    received = (clientSocket.recv(BUFFER_SIZE)).decode("utf-8")
+    if (received[0:3]) == "001":
+        print("Recieved a PUT request")
+        FL = int(received[3:8], 2)
+        print(f"FL: {FL}")
+
+        FN = (((received[8:(((FL+1)*8))])))
+
+        a = []
+        for i in range(math.ceil(len(FN)/8)):
+            a.append(int(FN[i*8:i*8+8]))
+
+        def toString(a):
+            l = []
+            m = ""
+            for i in a:
+                b = 0
+                c = 0
+                k = int(math.log10(i))+1
+                for j in range(k):
+                    b = ((i % 10)*(2 ** j))
+                    i = i // 10
+                    c = c + b
+                l.append(c)
+            for x in l:
+                m = m + chr(x)
+            return m
+
+        FNstr = toString(a)
+
+        print(FNstr)
+
+        FS = (received[(8+FL*8):(len(received))])
+        print(f"FS: {(int(FS, 2))}")
+
+        # Write file from incoming stream
+        with open(FNstr, "wb") as file:
+            while True:
+                buffer = (clientSocket.recv(BUFFER_SIZE))
+                if not buffer:
+                    # Upload Completed
+                    break
+                file.write(buffer)
+        print(f"{FNstr} downloaded.")
+        print(
+            f"Expected size: {int(FS, 2)}\tRecieved size: {os.path.getsize(FNstr)}")
 
 
 def change(oldfileName, newFileName):
@@ -113,15 +165,15 @@ def bye():
 
 def getCmd(splitCmd):
     if (splitCmd[opCodeIndex] == "put"):
-        put(splitCmd[fileNameIndex])  # done
+        put(splitCmd[fileNameIndex])
     elif (splitCmd[opCodeIndex] == "get"):
         get(splitCmd[fileNameIndex])
     elif (splitCmd[opCodeIndex] == "change"):
-        change(splitCmd[fileNameIndex], splitCmd[newFileNameIndex])  # done
+        change(splitCmd[fileNameIndex], splitCmd[newFileNameIndex])
     elif (splitCmd[opCodeIndex] == "help"):
-        help()  # done
+        help()
     elif (splitCmd[opCodeIndex] == "bye"):
-        bye()  # done
+        bye()
     else:
         print(f"Wrong Operation. \"{splitCmd[opCodeIndex]}\" does not exist.")
 
