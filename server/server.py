@@ -5,23 +5,20 @@
 # Aydin Azari Farhad - 40063330
 ############## Imports ##################
 from audioop import tostereo
+from ctypes import sizeof
 import math
 import opcode
 import time
 import socket
 import os
 
+# def reciever():
+#     print()
+# def interpret():
+#     print()
 
-def reciever():
-    print()
-
-
-def interpret():
-    print()
-
-
-SERVER_HOST = "0.0.0.0"
-SERVER_PORT = 15000
+SERVER_HOST = input("Please enter server IP address: ")  # "0.0.0.0"
+SERVER_PORT = int(input("Please enter port number: "))  # 15000
 # Set buffer size to 4 Bytes
 BUFFER_SIZE = 4096
 
@@ -71,25 +68,85 @@ while True:
         FS = (received[(8+FL*8):(len(received))])
         print(f"FS: {(int(FS, 2))}")
 
+        FScount = int(FS, 2)
+
         # Write file from incoming stream
         with open(FNstr, "wb") as file:
             while True:
                 buffer = (client_socket.recv(BUFFER_SIZE))
-                if not buffer:
+                file.write(buffer)
+                FScount -= len(buffer)
+                if (FScount <= 0):
                     # Upload Completed
                     toSend = (f"00000000").encode()
                     client_socket.send(toSend)
                     break
-                file.write(buffer)
         print(f"File {FNstr} recieved and created.")
         print(
             f"Expected size: {int(FS, 2)}\tRecieved size: {os.path.getsize(FNstr)}")
+
+    # get()
+    elif ((received[0:3]) == "001"):
+        print("Change request.")
+        FL = int(received[3:8], 2)
+        print(f"FL: {FL}")
+        FN = (((received[8:(((FL+1)*8))])))
+        print(f"FN: {FN}")
+        a = []
+        for i in range(math.ceil(len(FN)/8)):
+            a.append(int(FN[i*8:i*8+8]))
+
+        def toString(a):
+            l = []
+            m = ""
+            for i in a:
+                b = 0
+                c = 0
+                k = int(math.log10(i))+1
+                for j in range(k):
+                    b = ((i % 10)*(2 ** j))
+                    i = i // 10
+                    c = c + b
+                l.append(c)
+            for x in l:
+                m = m + chr(x)
+            return m
+
+        FNstr = toString(a)
+        print(f"FNstr: {FNstr}")
+
+        try:
+            FS = bin(os.path.getsize(FNstr))[2:].zfill(32)
+
+            print("Uploading to client...")
+            opCode = "001"
+            FL = received[3:8]
+            toSend = (f"{opCode}{FL}{FN}{FS}".encode())
+            print(f"ToSend: {toSend}")
+            client_socket.send(toSend)
+            with open(FNstr, "rb") as file:
+                while True:
+                    buffer = file.read(BUFFER_SIZE)
+                    print(f"Buffer: {buffer}")
+                    if not buffer:
+                        client_socket.close()
+                        break
+                    client_socket.sendall(buffer)
+            print("Upload Complete.")
+
+        except OSError as e:
+            print(f"{e.errno} ", end='')
+            print(e)
+            toSend = (f"01000000").encode()
+            client_socket.send(toSend)
+
     # help()
     elif ((received[0:3]) == "011"):
         helpText = "Commands: bye change get put"
         toSend = (f"110{len(helpText)}{helpText}").encode()
         print(f"to send: {toSend}")
         client_socket.send(toSend)
+
     # change()
     elif ((received[0:3]) == "010"):
         print("Change request.")
@@ -167,10 +224,3 @@ while True:
         print(f"Invalid opCode \"{received[0:3]}\"")
         toSend = (f"01100000").encode()
         client_socket.send(toSend)
-    # TODO: Functionalize the code above
-    #      DONE: Take file Bytes from client
-    #      DONE: Write file
-    #      Send OK Response
-    #      Debug Flag
-    #      Other Operations
-    #      Error Response

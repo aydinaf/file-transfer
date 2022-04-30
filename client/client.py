@@ -4,15 +4,10 @@
 # Project Assignment
 # Author: Aydin Azari Farhad - 40063330
 ###############################
-
-from audioop import tostereo
-from cmath import log
-import re
 import socket
 import os
-import time
 import math
-from urllib import response
+import sys
 
 opCodeIndex = 0
 fileNameIndex = 1
@@ -52,6 +47,7 @@ def put(fileName):
     FL = (fileNameLength(fileName))
     FN = fileNameToBin(fileName)
     FS = getFileSize(fileName)
+    FScount = int(FS, 2)
     toSend = (f"{opCode}{FL}{FN}{FS}".encode())
     print(f"ToSend: {toSend}")
     clientSocket.send(toSend)
@@ -59,10 +55,16 @@ def put(fileName):
         while True:
             buffer = file.read(BUFFER_SIZE)
             print(f"Buffer: {buffer}")
-            if not buffer:
-                break
+            print(FScount)
+            # if not buffer:
+            #     break
             clientSocket.sendall(buffer)
-    print("Upload Complete.")
+            FScount -= len(buffer)
+            if (FScount <= 0):
+                # Upload Completed
+                print("break")
+                break
+            print(FScount)
     response = (clientSocket.recv(BUFFER_SIZE)).decode("utf-8")
     if (response[0:3] == "000"):
         print("Server provided OK response. Upload Successful.")
@@ -70,8 +72,8 @@ def put(fileName):
         print("Server did not provide OK response. Upload Failed.")
 
 
-def get():
-    print("Uploading to server...")
+def get(fileName):
+    print("Downloading from server...")
     opCode = "001"
     FL = (fileNameLength(fileName))
     FN = fileNameToBin(fileName)
@@ -80,7 +82,7 @@ def get():
     clientSocket.send(toSend)
     received = (clientSocket.recv(BUFFER_SIZE)).decode("utf-8")
     if (received[0:3]) == "001":
-        print("Recieved a PUT request")
+        print(f"Recieved: {received}")
         FL = int(received[3:8], 2)
         print(f"FL: {FL}")
 
@@ -117,24 +119,25 @@ def get():
         with open(FNstr, "wb") as file:
             while True:
                 buffer = (clientSocket.recv(BUFFER_SIZE))
-                if not buffer:
-                    # Upload Completed
+                if (not buffer):
+                    # Download Completed
+                    print("break")
                     break
                 file.write(buffer)
+                buffer = 0
+                print(buffer)
         print(f"{FNstr} downloaded.")
         print(
             f"Expected size: {int(FS, 2)}\tRecieved size: {os.path.getsize(FNstr)}")
 
 
 def change(oldfileName, newFileName):
-    print(f"Changing {oldfileName} to {newFileName}")
     opCode = "010"
     oFL = (fileNameLength(oldfileName))
     oFN = fileNameToBin(oldfileName)
     nFL = (fileNameLength(newFileName))
     nFN = fileNameToBin(newFileName)
     toSend = bytes(f"{opCode}{oFL}{oFN}{nFL}{nFN}", encoding="utf-8")
-    print(f"ToSend: {toSend}")
     clientSocket.send(toSend)
     response = (clientSocket.recv(BUFFER_SIZE)).decode("utf-8")
     if (response[0:3] == "000"):
@@ -142,6 +145,7 @@ def change(oldfileName, newFileName):
     else:
         print(
             f"Server did not provide OK response. Error {response[0:3]} Upload Failed.")
+    clientSocket.close()
 
 
 def help():
@@ -149,9 +153,9 @@ def help():
     opCode = "011"
     unused = "00000"
     toSend = (f"{opCode}{unused}".encode())
-    print(f"ToSend: {toSend}")
     clientSocket.send(toSend)
     print((clientSocket.recv(BUFFER_SIZE)).decode("utf-8")[5:])
+    clientSocket.close()
 
 
 def bye():
@@ -181,11 +185,11 @@ def getCmd(splitCmd):
 
 
 # Takes IP and port number from user
-serverIP = "192.168.2.18"  # input("Please enter server IP address: ")
-port = 15000  # int(input("Please enter port number: "))
+serverIP = input("Please enter server IP address: ")  # "192.168.2.18"
+port = int(input("Please enter port number: "))  # 15000  #
 
 # Takes user command
-cmd = "chan"  # input("Client:~\$ ")
+cmd = input("Client:~\$ ")
 # splits user input based on space chars into arrays
 splitCmd = cmd.split()
 
@@ -199,7 +203,7 @@ while True:
 
     getCmd(splitCmd)
 
-    clientSocket.close()
-    print("line150")
     cmd = input("Client:~\$ ")
     splitCmd = cmd.split()
+
+# sys.argv[1,2]
